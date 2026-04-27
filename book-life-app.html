@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#F5F0E6">
+    <title>书影音收藏馆</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FAF8F3;
+            --bg-card: #FFFEF9;
+            --bg-paper: #F5F0E6;
+            --text-primary: #2C2416;
+            --text-secondary: #6B5D4D;
+            --text-muted: #9A8B78;
+            --accent-brown: #8B7355;
+            --accent-green: #7A8B6E;
+            --accent-amber: #C4A574;
+            --accent-red: #B85C4A;
+            --border-color: #E8E2D5;
+            --shadow-soft: 0 2px 12px rgba(44, 36, 22, 0.06);
+            --shadow-medium: 0 4px 20px rgba(44, 36, 22, 0.1);
+            --font-serif: 'Noto Serif SC', 'Songti SC', serif;
+            --font-sans: 'Noto Sans SC', sans-serif;
+            --font-calligraphy: 'ZCOOL XiaoWei', serif;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: var(--font-serif);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            position: relative;
+            box-shadow: 0 0 60px rgba(0,0,0,0.03);
+        }
+
+        /* Navigation */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255,254,249,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .nav-item.active {
+            color: var(--accent-brown);
+        }
+
+        .nav-item .icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            padding: 20px;
+            padding-bottom: 100px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard */
+        .dashboard-header {
+            text-align: center;
+            padding: 30px 0 40px;
+            position: relative;
+        }
+
+        .current-time {
+            font-size: 56px;
+            font-weight: 600;
+            letter-spacing: -2px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+        }
+
+        .current-date {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            letter-spacing: 2px;
+        }
+
+        .greeting {
+            margin-top: 20px;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        .card-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 16px 8px;
+            background: var(--bg-paper);
+            border-radius: var(--radius-md);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 20px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-paper);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .action-btn .icon {
+            font-size: 28px;
+        }
+
+        .action-btn .label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Record Form */
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-family: var(--font-serif);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-brown);
+            box-shadow: 0 0 0 3px rgba(139,115,85,0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .type-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .type-btn {
+            padding: 16px 8px;
+            background: var(--bg-paper);
+            border: 2px solid transparent;
+            border-radius: var(--radius-md);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .type-btn.active {
+            background: var(--bg-card);
+            border-color: var(--accent-brown);
+        }
+
+        .type-btn .icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .type-btn .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .star {
+            font-size: 32px;
+            color: var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .star.active, .star:hover {
+            color: var(--accent-amber);
+        }
+
+        /* Image Upload */
+        .image-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-paper);
+        }
+
+        .image-upload:hover {
+            border-color: var(--accent-brown);
+        }
+
+        .image-upload .preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: var(--radius-sm);
+            display: none;
+        }
+
+        .image-upload.has-image .preview {
+            display: block;
+        }
+
+        .image-upload.has-image .upload-text {
+            display: none;
+        }
+
+        /* Calendar */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 12px;
+        }
+
+        .calendar-nav-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 8px 0;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            font-size: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+
+        .calendar-day:hover {
+            background: var(--bg-paper);
+        }
+
+        .calendar-day.today {
+            border-color: var(--accent-brown);
+            font-weight: 600;
+        }
+
+        .calendar-day.other-month {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        .calendar-day .intensity {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        .calendar-day .intensity-bar {
+            position: absolute;
+            bottom: 2px;
+            left: 4px;
+            right: 4px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--accent-green);
+        }
+
+        .calendar-day.has-data .intensity-bar {
+            background: linear-gradient(to right, var(--accent-green), #5a7a4e);
+        }
+
+        .calendar-day.level-1 .intensity-bar { opacity: 0.3; }
+        .calendar-day.level-2 .intensity-bar { opacity: 0.5; }
+        .calendar-day.level-3 .intensity-bar { opacity: 0.7; }
+        .calendar-day.level-4 .intensity-bar { opacity: 1; }
+
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-red);
+        }
+
+        /* Todo List */
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .todo-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .todo-item.completed .todo-checkbox {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .todo-date {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -24px;
+            top: 24px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-brown);
+            border: 3px solid var(--bg-primary);
+        }
+
+        .timeline-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .timeline-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .timeline-rating {
+            font-size: 14px;
+            color: var(--accent-amber);
+        }
+
+        /* Records List */
+        .records-filter {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: var(--bg-paper);
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .filter-chip.active {
+            background: var(--accent-brown);
+            color: white;
+        }
+
+        .record-card {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .record-card:active {
+            transform: scale(0.98);
+        }
+
+        .record-cover {
+            width: 70px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            background: var(--bg-paper);
+            flex-shrink: 0;
+        }
+
+        .record-cover-placeholder {
+            width: 70px;
+            height: 100px;
+            background: var(--bg-paper);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .record-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .record-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .record-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .record-rating {
+            color: var(--accent-amber);
+            font-size: 12px;
+        }
+
+        .record-comment {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-paper);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-family: var(--font-serif);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent-brown);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #7A6347;
+        }
+
+        .btn-secondary {
+            background: var(--bg-paper);
+            color: var(--text-secondary);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        /* Tab Switcher */
+        .tab-switcher {
+            display: flex;
+            background: var(--bg-paper);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Goals */
+        .goal-progress {
+            margin-top: 12px;
+            height: 8px;
+            background: var(--bg-paper);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .goal-progress-bar {
+            height: 100%;
+            background: var(--accent-green);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Review Form */
+        .review-section {
+            margin-bottom: 24px;
+        }
+
+        .review-question {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .page {
+                padding: 30px;
+            }
+            
+            .card {
+                padding: 28px;
+            }
+
+            .current-time {
+                font-size: 72px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .nav-bar {
+                display: none;
+            }
+            
+            .page {
+                display: block !important;
+                page-break-after: always;
+            }
+        }
+
+        /* Font sizes for different screen readers */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #1A1814;
+                --bg-card: #252219;
+                --bg-paper: #1F1C18;
+                --text-primary: #E8E2D5;
+                --text-secondary: #A89B88;
+                --text-muted: #6B5D4D;
+                --accent-brown: #B8956A;
+                --accent-green: #8A9B7E;
+                --accent-amber: #D4B574;
+                --border-color: #3A342C;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Dashboard Page -->
+        <div class="page active" id="page-dashboard">
+            <div class="dashboard-header">
+                <div class="current-time" id="currentTime">00:00</div>
+                <div class="current-date" id="currentDate">2024年1月1日 星期一</div>
+                <div class="greeting" id="greeting"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">今日概览</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="todayRecords">0</div>
+                        <div class="stat-label">记录数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="todayStudyHours">0</div>
+                        <div class="stat-label">学习时</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="todayReadHours">0</div>
+                        <div class="stat-label">阅读时</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">快捷操作</div>
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="showPage('page-record')">
+                        <span class="icon">✍️</span>
+                        <span class="label">写记录</span>
+                    </button>
+                    <button class="action-btn" onclick="showPage('page-calendar')">
+                        <span class="icon">📅</span>
+                        <span class="label">日历</span>
+                    </button>
+                    <button class="action-btn" onclick="showPage('page-records')">
+                        <span class="icon">📚</span>
+                        <span class="label">书影音</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">待办事项</div>
+                <div id="quickTodoList"></div>
+                <button class="btn btn-secondary btn-small" onclick="openModal('modal-todo')" style="margin-top: 12px;">+ 添加待办</button>
+            </div>
+        </div>
+
+        <!-- Records Page -->
+        <div class="page" id="page-records">
+            <div class="card-title" style="margin-bottom: 16px;">书影音库</div>
+            
+            <div class="records-filter">
+                <button class="filter-chip active" data-filter="all">全部</button>
+                <button class="filter-chip" data-filter="book">书籍</button>
+                <button class="filter-chip" data-filter="movie">影视</button>
+                <button class="filter-chip" data-filter="podcast">播客</button>
+                <button class="filter-chip" data-filter="music">音乐</button>
+            </div>
+
+            <div id="recordsList"></div>
+        </div>
+
+        <!-- Record Form Page -->
+        <div class="page" id="page-record">
+            <div class="card-title" style="margin-bottom: 20px;">新增记录</div>
+            
+            <div class="form-section">
+                <div class="form-label">类型</div>
+                <div class="type-selector">
+                    <button class="type-btn active" data-type="book">
+                        <span class="icon">📖</span>
+                        <span class="label">书籍</span>
+                    </button>
+                    <button class="type-btn" data-type="movie">
+                        <span class="icon">🎬</span>
+                        <span class="label">影视</span>
+                    </button>
+                    <button class="type-btn" data-type="podcast">
+                        <span class="icon">🎧</span>
+                        <span class="label">播客</span>
+                    </button>
+                    <button class="type-btn" data-type="music">
+                        <span class="icon">🎵</span>
+                        <span class="label">音乐</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">标题</label>
+                <input type="text" class="form-input" id="recordTitle" placeholder="输入标题">
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">封面图片</label>
+                <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                    <span class="upload-text">点击上传图片</span>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none" onchange="handleImageUpload(event)">
+                    <img class="preview" id="imagePreview">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">日期</label>
+                <input type="date" class="form-input" id="recordDate">
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">标签</label>
+                <input type="text" class="form-input" id="recordTags" placeholder="用逗号分隔多个标签">
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">评分</label>
+                <div class="star-rating" id="starRating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">简短评价</label>
+                <input type="text" class="form-input" id="recordComment" placeholder="一句话评价">
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">详细评论</label>
+                <textarea class="form-textarea" id="recordReview" placeholder="写下你的感悟..."></textarea>
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">学习/阅读时长 (小时)</label>
+                <input type="number" class="form-input" id="recordDuration" placeholder="0" step="0.5" min="0">
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">心情</label>
+                <select class="form-select" id="recordMood">
+                    <option value="">选择心情</option>
+                    <option value="平静">平静</option>
+                    <option value="愉悦">愉悦</option>
+                    <option value="感动">感动</option>
+                    <option value="思考">思考</option>
+                    <option value="忧伤">忧伤</option>
+                    <option value="振奋">振奋</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveRecord()">保存记录</button>
+        </div>
+
+        <!-- Calendar Page -->
+        <div class="page" id="page-calendar">
+            <div class="calendar-header">
+                <div class="calendar-title" id="calendarTitle">2024年1月</div>
+                <div class="calendar-nav">
+                    <button class="calendar-nav-btn" onclick="changeMonth(-1)">‹</button>
+                    <button class="calendar-nav-btn" onclick="changeMonth(1)">›</button>
+                </div>
+            </div>
+
+            <div class="tab-switcher">
+                <button class="tab-btn active" data-view="study">学习时长</button>
+                <button class="tab-btn" data-view="read">阅读时长</button>
+            </div>
+
+            <div class="calendar-weekdays">
+                <div class="calendar-weekday">日</div>
+                <div class="calendar-weekday">一</div>
+                <div class="calendar-weekday">二</div>
+                <div class="calendar-weekday">三</div>
+                <div class="calendar-weekday">四</div>
+                <div class="calendar-weekday">五</div>
+                <div class="calendar-weekday">六</div>
+            </div>
+
+            <div class="calendar-days" id="calendarDays"></div>
+
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-title">待办事项</div>
+                <div id="todoList"></div>
+                <button class="btn btn-secondary btn-small" onclick="openModal('modal-todo')" style="margin-top: 12px;">+ 添加待办</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">今日事件</div>
+                <div id="todayEvents"></div>
+            </div>
+        </div>
+
+        <!-- Todo Page -->
+        <div class="page" id="page-todos">
+            <div class="card-title" style="margin-bottom: 16px;">待办事项</div>
+            
+            <div class="tab-switcher">
+                <button class="tab-btn active" data-todo-period="today">今日</button>
+                <button class="tab-btn" data-todo-period="upcoming">待办</button>
+                <button class="tab-btn" data-todo-period="completed">已完成</button>
+            </div>
+            
+            <div id="todoPageList"></div>
+            
+            <button class="btn btn-primary" onclick="openModal('modal-todo')" style="margin-top: 20px;">+ 添加待办</button>
+            
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-title">重要事件</div>
+                <div id="eventList"></div>
+            </div>
+        </div>
+
+        <!-- Review Page -->
+        <div class="page" id="page-review">
+            <div class="card-title" style="margin-bottom: 20px;">复盘总结</div>
+
+            <div class="tab-switcher">
+                <button class="tab-btn active" data-period="daily">日报</button>
+                <button class="tab-btn" data-period="weekly">周报</button>
+                <button class="tab-btn" data-period="monthly">月报</button>
+                <button class="tab-btn" data-period="yearly">年报</button>
+            </div>
+
+            <div id="reviewContent"></div>
+
+            <button class="btn btn-primary" onclick="openModal('modal-review')" style="margin-top: 20px;">写复盘</button>
+        </div>
+
+        <!-- Timeline Page -->
+        <div class="page" id="page-timeline">
+            <div class="card-title" style="margin-bottom: 20px;">时光轨道</div>
+
+            <div id="timelineContent"></div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <button class="nav-item active" data-page="page-dashboard" onclick="showPage('page-dashboard')">
+                <span class="icon">🏠</span>
+                <span>首页</span>
+            </button>
+            <button class="nav-item" data-page="page-todos" onclick="showPage('page-todos')">
+                <span class="icon">✅</span>
+                <span>待办</span>
+            </button>
+            <button class="nav-item" data-page="page-calendar" onclick="showPage('page-calendar')">
+                <span class="icon">📅</span>
+                <span>日历</span>
+            </button>
+            <button class="nav-item" data-page="page-records" onclick="showPage('page-records')">
+                <span class="icon">📚</span>
+                <span>记录</span>
+            </button>
+            <button class="nav-item" data-page="page-timeline" onclick="showPage('page-timeline')">
+                <span class="icon">⏱️</span>
+                <span>时光</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-record">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">新增记录</div>
+                <button class="modal-close" onclick="closeModal('modal-record')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <div class="type-selector">
+                        <button class="type-btn active" data-type="book"><span class="icon">📖</span><span class="label">书籍</span></button>
+                        <button class="type-btn" data-type="movie"><span class="icon">🎬</span><span class="label">影视</span></button>
+                        <button class="type-btn" data-type="podcast"><span class="icon">🎧</span><span class="label">播客</span></button>
+                        <button class="type-btn" data-type="music"><span class="icon">🎵</span><span class="label">音乐</span></button>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <label class="form-label">标题</label>
+                    <input type="text" class="form-input" id="modalRecordTitle" placeholder="输入标题">
+                </div>
+                <div class="form-section">
+                    <label class="form-label">日期</label>
+                    <input type="date" class="form-input" id="modalRecordDate">
+                </div>
+                <div class="form-section">
+                    <label class="form-label">评分</label>
+                    <div class="star-rating" id="modalStarRating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <label class="form-label">简短评价</label>
+                    <input type="text" class="form-input" id="modalRecordComment" placeholder="一句话评价">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-record')">取消</button>
+                <button class="btn btn-primary" onclick="saveRecordFromModal()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-todo">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">添加待办</div>
+                <button class="modal-close" onclick="closeModal('modal-todo')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <label class="form-label">待办事项</label>
+                    <input type="text" class="form-input" id="todoContent" placeholder="输入待办内容">
+                </div>
+                <div class="form-section">
+                    <label class="form-label">日期</label>
+                    <input type="date" class="form-input" id="todoDate">
+                </div>
+                <div class="form-section">
+                    <label class="form-label">重要事件</label>
+                    <select class="form-select" id="todoIsEvent">
+                        <option value="false">普通待办</option>
+                        <option value="true">重要事件</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-todo')">取消</button>
+                <button class="btn btn-primary" onclick="saveTodo()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-goal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">添加目标</div>
+                <button class="modal-close" onclick="closeModal('modal-goal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <label class="form-label">目标内容</label>
+                    <input type="text" class="form-input" id="goalContent" placeholder="输入目标">
+                </div>
+                <div class="form-section">
+                    <label class="form-label">周期</label>
+                    <select class="form-select" id="goalPeriod">
+                        <option value="daily">每日</option>
+                        <option value="weekly">每周</option>
+                        <option value="monthly">每月</option>
+                    </select>
+                </div>
+                <div class="form-section">
+                    <label class="form-label">目标数量</label>
+                    <input type="number" class="form-input" id="goalTarget" placeholder="如：每周读2本书">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-goal')">取消</button>
+                <button class="btn btn-primary" onclick="saveGoal()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-review">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">写复盘</div>
+                <button class="modal-close" onclick="closeModal('modal-review')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <div class="review-question">本周完成了什么？</div>
+                    <textarea class="form-textarea" id="reviewCompleted" placeholder="列出你完成的事情..."></textarea>
+                </div>
+                <div class="form-section">
+                    <div class="review-question">哪些做得好？</div>
+                    <textarea class="form-textarea" id="reviewGood" placeholder="记录做得好的一面..."></textarea>
+                </div>
+                <div class="form-section">
+                    <div class="review-question">哪些需要改进？</div>
+                    <textarea class="form-textarea" id="reviewImprove" placeholder="反思需要改进的地方..."></textarea>
+                </div>
+                <div class="form-section">
+                    <div class="review-question">情绪变化</div>
+                    <select class="form-select" id="reviewMood">
+                        <option value="平静">平静</option>
+                        <option value="愉悦">愉悦</option>
+                        <option value="焦虑">焦虑</option>
+                        <option value="充实">充实</option>
+                        <option value="压力">压力</option>
+                    </select>
+                </div>
+                <div class="form-section">
+                    <div class="review-question">下阶段计划</div>
+                    <textarea class="form-textarea" id="reviewPlan" placeholder="写下阶段的计划..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-review')">取消</button>
+                <button class="btn btn-primary" onclick="saveReview()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        const STORAGE_KEY = 'bookLifeApp_data';
+        
+        let appData = {
+            records: [],
+            todos: [],
+            goals: [],
+            reviews: [],
+            currentView: 'study'
+        };
+
+        let currentRecordType = 'book';
+        let currentRecordRating = 0;
+        let currentImage = null;
+        let currentMonth = new Date();
+
+        const typeIcons = {
+            book: '📖',
+            movie: '🎬',
+            podcast: '🎧',
+            music: '🎵'
+        };
+
+        const typeNames = {
+            book: '书籍',
+            movie: '影视',
+            podcast: '播客',
+            music: '音乐'
+        };
+
+        // Greetings
+        const greetings = [
+            '今天也要好好生活呀',
+            '保持好奇，继续探索',
+            '让阅读成为习惯',
+            '记录本身就是意义',
+            '今天看了什么好内容？',
+            '每一部作品都是一段旅程',
+            '用文字定格此刻的思考',
+            '今天也要按时休息哦'
+        ];
+
+        // Initialize
+        let timeInterval;
+        function init() {
+            loadData();
+            updateTime();
+            if (timeInterval) clearInterval(timeInterval);
+            timeInterval = setInterval(updateTime, 1000);
+            initEventListeners();
+            renderAll();
+            const rd = document.getElementById('recordDate');
+            const mrd = document.getElementById('modalRecordDate');
+            const td = document.getElementById('todoDate');
+            const today = getTodayDate();
+            if (rd) rd.value = today;
+            if (mrd) mrd.value = today;
+            if (td) td.value = today;
+        }
+
+        function getTodayDate() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appData = { ...appData, ...parsed };
+                } catch(e) {
+                    console.log('Data load error:', e);
+                }
+            } else {
+                // Sample data
+                appData.records = [
+                    { id: 1, type: 'book', title: '百年孤独', date: '2024-01-15', rating: 5, comment: '魔幻现实的巅峰之作', tags: ['拉美文学', '经典'], duration: 12, mood: '感动' },
+                    { id: 2, type: 'movie', title: '肖申克的救赎', date: '2024-01-10', rating: 5, comment: '希望永不灭', tags: ['经典', '自由'], duration: 2.5, mood: '振奋' },
+                    { id: 3, type: 'podcast', title: '组织时间的艺术', date: '2024-01-08', rating: 4, comment: '受益��浅', tags: ['效率', '自我提升'], duration: 1, mood: '思考' },
+                    { id: 4, type: 'music', title: '天空之城', date: '2024-01-05', rating: 5, comment: '永远的神', tags: ['经典', '纯音乐'], duration: 0.5, mood: '平静' }
+                ];
+                appData.todos = [
+                    { id: 1, content: '读完《瓦尔登湖》', date: '2024-01-20', completed: false, isEvent: false },
+                    { id: 2, content: '春节', date: '2024-02-10', completed: false, isEvent: true }
+                ];
+                appData.goals = [
+                    { id: 1, content: '每周读一本书', period: 'weekly', target: 1, current: 0 },
+                    { id: 2, content: '每天学习1小时', period: 'daily', target: 1, current: 0 }
+                ];
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        // Time Display
+        let timeInterval;
+        function updateTime() {
+            try {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const timeEl = document.getElementById('currentTime');
+                if (timeEl) timeEl.textContent = `${hours}:${minutes}`;
+                
+                const dateEl = document.getElementById('currentDate');
+                if (dateEl) {
+                    const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][now.getDay()]}`;
+                    dateEl.textContent = dateStr;
+                }
+                
+                const greetingEl = document.getElementById('greeting');
+                if (greetingEl && !greetingEl.textContent) {
+                    greetingEl.textContent = greetings[Math.floor(Math.random() * greetings.length)];
+                }
+            } catch(e) {}
+        }
+
+        // Navigation
+        function showPage(pageId) {
+            try {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const page = document.getElementById(pageId);
+                if (page) page.classList.add('active');
+                
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+                if (navItem) navItem.classList.add('active');
+            } catch(e) {}
+        }
+
+        function openModal(modalId) {
+            try {
+                const modal = document.getElementById(modalId);
+                if (modal) modal.classList.add('active');
+            } catch(e) {}
+        }
+
+        function closeModal(modalId) {
+            try {
+                const modal = document.getElementById(modalId);
+                if (modal) modal.classList.remove('active');
+            } catch(e) {}
+        }
+
+        // Event Listeners
+        function initEventListeners() {
+            // Type selector
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.parentElement.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentRecordType = this.dataset.type;
+                });
+            });
+
+            // Star rating
+            document.querySelectorAll('.star-rating').forEach(rating => {
+                rating.querySelectorAll('.star').forEach(star => {
+                    star.addEventListener('click', function() {
+                        const ratingEl = this.parentElement;
+                        const value = parseInt(this.dataset.value);
+                        ratingEl.dataset.value = value;
+                        ratingEl.querySelectorAll('.star').forEach((s, i) => {
+                            s.classList.toggle('active', i < value);
+                        });
+                        if (ratingEl.id === 'modalStarRating') {
+                            currentRecordRating = value;
+                        }
+                    });
+                });
+            });
+
+            // Filter chips
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    renderRecords(this.dataset.filter);
+                });
+            });
+
+            // Tab switcher
+            document.querySelectorAll('.tab-switcher').forEach(switcher => {
+                switcher.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        switcher.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        const parentId = switcher.closest('.page')?.id;
+                        if (parentId === 'page-calendar') {
+                            appData.currentView = this.dataset.view;
+                            renderCalendar();
+                        } else if (parentId === 'page-todos') {
+                            renderTodoPage(this.dataset.todoPeriod);
+                        }
+                    });
+                });
+            });
+
+            // Close modal on overlay click
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('active');
+                    }
+                });
+            });
+        }
+
+        // Render Functions
+        function renderAll() {
+            try {
+                renderDashboard();
+                renderRecords();
+                renderCalendar();
+                renderTodos();
+                try { renderTodoPage('today'); } catch(e) {}
+                try { renderReview(); } catch(e) {}
+                try { renderTimeline(); } catch(e) {}
+            } catch(e) {}
+        }
+
+        function renderDashboard() {
+            const today = getTodayDate();
+            const todayRecords = appData.records.filter(r => r.date === today);
+            
+            document.getElementById('todayRecords').textContent = todayRecords.length;
+            
+            const studyHours = todayRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
+            document.getElementById('todayStudyHours').textContent = studyHours;
+            document.getElementById('todayReadHours').textContent = studyHours;
+
+            // Render quick todo list
+            const today = getTodayDate();
+            const todayTodos = appData.todos.filter(t => t.date === today && !t.isEvent);
+            const quickTodoContainer = document.getElementById('quickTodoList');
+            if (todayTodos.length === 0) {
+                quickTodoContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 13px;">今日暂无待办</p>';
+            } else {
+                quickTodoContainer.innerHTML = todayTodos.slice(0, 3).map(t => `
+                    <div class="todo-item ${t.completed ? 'completed' : ''}" onclick="event.stopPropagation(); toggleTodo(${t.id})">
+                        <div class="todo-checkbox" style="width:20px;height:20px;border-width:2px;">${t.completed ? '✓' : ''}</div>
+                        <div class="todo-text">${t.content}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderRecords(filter = 'all') {
+            const container = document.getElementById('recordsList');
+            let records = [...appData.records];
+            
+            if (filter !== 'all') {
+                records = records.filter(r => r.type === filter);
+            }
+            
+            records.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">📚</span>
+                        <p>暂无记录，开始你的书影音之旅吧</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = records.map(r => `
+                <div class="record-card" onclick="openRecordDetail(${r.id})">
+                    <div class="record-cover-placeholder">${typeIcons[r.type]}</div>
+                    <div class="record-info">
+                        <div class="record-title">${r.title}</div>
+                        <div class="record-meta">${typeNames[r.type]} · ${r.date} · ${r.tags?.join('、') || ''}</div>
+                        <div class="record-rating">${'★'.repeat(r.rating)}</div>
+                        <div class="record-comment">${r.comment || ''}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCalendar() {
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+            
+            document.getElementById('calendarTitle').textContent = `${year}年${month + 1}月`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDay = firstDay.getDay();
+            const daysInMonth = lastDay.getDate();
+            
+            const today = new Date();
+            const todayStr = getTodayDate();
+            
+            let html = '';
+            
+            // Previous month days
+            const prevMonth = new Date(year, month, 0);
+            const prevDays = prevMonth.getDate();
+            for (let i = startDay - 1; i >= 0; i--) {
+                const day = prevDays - i;
+                html += `<div class="calendar-day other-month">${day}</div>`;
+            }
+            
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = dateStr === todayStr;
+                const dayRecords = appData.records.filter(r => r.date === dateStr);
+                const dayTodos = appData.todos.filter(t => t.date === dateStr);
+                
+                let intensity = 0;
+                let levelClass = '';
+                if (appData.currentView === 'study') {
+                    const hours = dayRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
+                    intensity = Math.min(hours / 8, 1);
+                } else {
+                    const hours = dayRecords.filter(r => r.type === 'book').reduce((sum, r) => sum + (r.duration || 0), 0);
+                    intensity = Math.min(hours / 4, 1);
+                }
+                
+                if (intensity > 0 && intensity <= 0.25) levelClass = 'level-1';
+                else if (intensity > 0.25 && intensity <= 0.5) levelClass = 'level-2';
+                else if (intensity > 0.5 && intensity <= 0.75) levelClass = 'level-3';
+                else if (intensity > 0.75) levelClass = 'level-4';
+                
+                const hasEvent = dayTodos.some(t => t.isEvent);
+                const hasData = intensity > 0;
+                
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''} ${hasData ? 'has-data' : ''} ${levelClass}" onclick="showDateRecords('${dateStr}')">
+                        ${day}
+                        ${hasData ? `<span class="intensity-bar"></span>` : ''}
+                    </div>
+                `;
+            }
+            
+            // Next month days
+            const totalCells = startDay + daysInMonth;
+            const remainder = 7 - (totalCells % 7);
+            if (remainder < 7) {
+                for (let day = 1; day <= remainder; day++) {
+                    html += `<div class="calendar-day other-month">${day}</div>`;
+                }
+            }
+            
+            document.getElementById('calendarDays').innerHTML = html;
+            renderTodos();
+        }
+
+        function changeMonth(delta) {
+            currentMonth.setMonth(currentMonth.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderTodos() {
+            const today = getTodayDate();
+            const todayTodos = appData.todos.filter(t => t.date === today);
+            
+            document.getElementById('todayEvents').innerHTML = todayTodos.filter(t => t.isEvent).map(t => `
+                <div class="todo-item">
+                    <div class="todo-text">${t.content}</div>
+                </div>
+            `).join('') || '<p style="color: var(--text-muted); font-size: 13px;">今日无重要事件</p>';
+            
+            const upcomingTodos = appData.todos.filter(t => t.date >= today && !t.isEvent).slice(0, 5);
+            document.getElementById('todoList').innerHTML = upcomingTodos.map(t => `
+                <div class="todo-item ${t.completed ? 'completed' : ''}" onclick="toggleTodo(${t.id})">
+                    <div class="todo-checkbox">${t.completed ? '✓' : ''}</div>
+                    <div class="todo-text">${t.content}</div>
+                    <div class="todo-date">${t.date}</div>
+                </div>
+            `).join('') || '<p style="color: var(--text-muted); font-size: 13px;">暂无待办</p>';
+            
+            const eventList = document.getElementById('eventList');
+            const events = appData.todos.filter(t => t.isEvent).slice(0, 10);
+            eventList.innerHTML = events.map(t => `
+                <div class="todo-item">
+                    <div class="todo-text">${t.content}</div>
+                    <div class="todo-date">${t.date}</div>
+                </div>
+            `).join('') || '<p style="color: var(--text-muted); font-size: 13px;">暂无重要事件</p>';
+        }
+        
+        function renderTodoPage(period = 'today') {
+            const today = getTodayDate();
+            const todoPageList = document.getElementById('todoPageList');
+            
+            let todos;
+            if (period === 'today') {
+                todos = appData.todos.filter(t => t.date === today && !t.isEvent);
+            } else if (period === 'upcoming') {
+                todos = appData.todos.filter(t => t.date > today && !t.completed && !t.isEvent).slice(0, 30);
+            } else {
+                todos = appData.todos.filter(t => t.completed).slice(0, 30);
+            }
+            
+            if (todos.length === 0) {
+                const emptyMsg = period === 'today' ? '今日暂无待办' : (period === 'upcoming' ? '暂无待办事项' : '暂无已完成');
+                todoPageList.innerHTML = `<div class="empty-state"><p>${emptyMsg}</p></div>`;
+                return;
+            }
+            
+            todoPageList.innerHTML = todos.map(t => `
+                <div class="todo-item ${t.completed ? 'completed' : ''}" onclick="toggleTodo(${t.id})">
+                    <div class="todo-checkbox" style="width:22px;height:22px;border-width:2px;">${t.completed ? '✓' : ''}</div>
+                    <div class="todo-text">${t.content}</div>
+                    <div class="todo-date">${t.date}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderGoals() {
+            document.getElementById('goalsList').innerHTML = appData.goals.map(g => `
+                <div class="todo-item">
+                    <div class="todo-text">${g.content}</div>
+                    <div class="goal-progress" style="flex: 2;">
+                        <div class="goal-progress-bar" style="width: ${(g.current / g.target) * 100}%"></div>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted);">${g.current}/${g.target}</div>
+                </div>
+            `).join('') || '<p style="color: var(--text-muted); font-size: 13px;">暂无目标</p>';
+        }
+
+        function renderReview() {
+            const reviews = [...appData.reviews].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            document.getElementById('reviewContent').innerHTML = reviews.map(r => `
+                <div class="card">
+                    <div class="card-title">${r.date} ${r.period}</div>
+                    <p style="margin-bottom: 12px;"><strong>完成事项：</strong>${r.completed || '-'}</p>
+                    <p style="margin-bottom: 12px;"><strong>做得好：</strong>${r.good || '-'}</p>
+                    <p style="margin-bottom: 12px;"><strong>需改进：</strong>${r.improve || '-'}</p>
+                    <p style="margin-bottom: 12px;"><strong>心情：</strong>${r.mood || '-'}</p>
+                    <p><strong>计划：</strong>${r.plan || '-'}</p>
+                </div>
+            `).join('') || '<p style="color: var(--text-muted); font-size: 13px;">暂无复盘记录</p>';
+        }
+
+        function renderTimeline() {
+            const records = [...appData.records].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            document.getElementById('timelineContent').innerHTML = `
+                <div class="timeline">
+                    ${records.map(r => `
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-date">${r.date}</div>
+                                <div class="timeline-title">${typeIcons[r.type]} ${r.title}</div>
+                                <div class="timeline-rating">${'★'.repeat(r.rating)}</div>
+                                <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">${r.comment || ''}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Actions
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImage = e.target.result;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = currentImage;
+                    document.querySelector('.image-upload').classList.add('has-image');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveRecord() {
+            const title = document.getElementById('recordTitle').value.trim();
+            if (!title) {
+                alert('请输入标题');
+                return;
+            }
+
+            const record = {
+                id: Date.now(),
+                type: currentRecordType,
+                title: title,
+                date: document.getElementById('recordDate').value || getTodayDate(),
+                tags: document.getElementById('recordTags').value.split(',').map(t => t.trim()).filter(t => t),
+                rating: currentRecordRating || 3,
+                comment: document.getElementById('recordComment').value.trim(),
+                review: document.getElementById('recordReview').value.trim(),
+                duration: parseFloat(document.getElementById('recordDuration').value) || 0,
+                mood: document.getElementById('recordMood').value,
+                image: currentImage
+            };
+
+            appData.records.unshift(record);
+            saveData();
+            
+            // Reset form
+            document.getElementById('recordTitle').value = '';
+            document.getElementById('recordTags').value = '';
+            document.getElementById('recordComment').value = '';
+            document.getElementById('recordReview').value = '';
+            document.getElementById('recordDuration').value = '';
+            currentRecordRating = 0;
+            currentImage = null;
+            
+            showPage('page-records');
+            renderAll();
+        }
+
+        function saveRecordFromModal() {
+            const title = document.getElementById('modalRecordTitle').value.trim();
+            if (!title) {
+                alert('请输入标题');
+                return;
+            }
+
+            const record = {
+                id: Date.now(),
+                type: currentRecordType,
+                title: title,
+                date: document.getElementById('modalRecordDate').value || getTodayDate(),
+                rating: currentRecordRating || 3,
+                comment: document.getElementById('modalRecordComment').value.trim(),
+                duration: 0
+            };
+
+            appData.records.unshift(record);
+            saveData();
+            
+            closeModal('modal-record');
+            document.getElementById('modalRecordTitle').value = '';
+            document.getElementById('modalRecordComment').value = '';
+            currentRecordRating = 0;
+            
+            renderAll();
+        }
+
+        function saveTodo() {
+            const content = document.getElementById('todoContent').value.trim();
+            if (!content) {
+                alert('请输入待办内容');
+                return;
+            }
+
+            const todo = {
+                id: Date.now(),
+                content: content,
+                date: document.getElementById('todoDate').value || getTodayDate(),
+                completed: false,
+                isEvent: document.getElementById('todoIsEvent').value === 'true'
+            };
+
+            appData.todos.push(todo);
+            saveData();
+            
+            closeModal('modal-todo');
+            document.getElementById('todoContent').value = '';
+            
+            renderTodos();
+            renderCalendar();
+        }
+
+        function toggleTodo(id) {
+            const todo = appData.todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                saveData();
+                renderTodos();
+            }
+        }
+
+        function saveGoal() {
+            const content = document.getElementById('goalContent').value.trim();
+            if (!content) {
+                alert('请输入目标内容');
+                return;
+            }
+
+            const goal = {
+                id: Date.now(),
+                content: content,
+                period: document.getElementById('goalPeriod').value,
+                target: parseInt(document.getElementById('goalTarget').value) || 1,
+                current: 0
+            };
+
+            appData.goals.push(goal);
+            saveData();
+            
+            closeModal('modal-goal');
+            document.getElementById('goalContent').value = '';
+            
+            renderGoals();
+        }
+
+        function saveReview() {
+            const review = {
+                id: Date.now(),
+                date: getTodayDate(),
+                period: 'weekly',
+                completed: document.getElementById('reviewCompleted').value.trim(),
+                good: document.getElementById('reviewGood').value.trim(),
+                improve: document.getElementById('reviewImprove').value.trim(),
+                mood: document.getElementById('reviewMood').value,
+                plan: document.getElementById('reviewPlan').value.trim()
+            };
+
+            appData.reviews.push(review);
+            saveData();
+            
+            closeModal('modal-review');
+            
+            document.getElementById('reviewCompleted').value = '';
+            document.getElementById('reviewGood').value = '';
+            document.getElementById('reviewImprove').value = '';
+            document.getElementById('reviewPlan').value = '';
+            
+            renderReview();
+        }
+
+        function showDateRecords(dateStr) {
+            const records = appData.records.filter(r => r.date === dateStr);
+            
+            if (records.length > 0) {
+                alert(records.map(r => `${typeIcons[r.type]} ${r.title} - ${r.comment || '无评价'}`).join('\n'));
+            } else {
+                const todo = appData.todos.find(t => t.date === dateStr);
+                if (todo) {
+                    alert(`待办: ${todo.content}`);
+                }
+            }
+        }
+
+        function openRecordDetail(id) {
+            const record = appData.records.find(r => r.id === id);
+            if (record) {
+                alert(`${record.title}\n类型: ${typeNames[record.type]}\n日期: ${record.date}\n评分: ${'★'.repeat(record.rating)}\n评价: ${record.comment || '无'}\n时长: ${record.duration}h`);
+            }
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
